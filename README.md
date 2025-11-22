@@ -18,6 +18,7 @@
 # Быстрый старт
 
 Чтобы получить инструмент достаточно данного кода:
+
 ```Python
 from langchain_mtuci import MtuciToolFactory
 
