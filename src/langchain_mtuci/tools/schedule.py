@@ -13,14 +13,20 @@ class ScheduleTool(BaseTool):
     name: str = "mtuci_schedule"
     description: str = "Получает расписание на определённую дату"
     args_schema: Type[ScheduleInput] = ScheduleInput
-    metadata: dict[str, Any] = {"factory": None}
+    metadata: dict[str, Any] = {
+        "factory": None,
+        "formatter": None
+    }
 
     async def _arun(
         self,
         date: str
-    ) -> list[dict[str, Any]] | dict[str, Any]:
+    ) -> Any | dict[str, Any]:
         if not (factory := self.metadata.get("factory")):
             return {"error": "Не найдена фабрика, породившая инструмент"}
+
+        if not (formatter := self.metadata.get("formatter")):
+            return {"error": "Не найден форматер"}
 
         date_ = datetime.strptime(date, "%d.%m.%Y")
         client: Mtuci = await factory.session.get_client()
@@ -30,7 +36,7 @@ class ScheduleTool(BaseTool):
             if not schedule.lessons:
                 return {"info": "На сегодня нет занятий"}
 
-            return [l.model_dump() for l in schedule.lessons]
+            return formatter.format(schedule)
 
         except Exception as err: # pylint disable=W0718
             return {"error": str(err)}

@@ -13,6 +13,12 @@ from ..tools import (
 )
 from ..session import MtuciSession
 
+from ..formatters import (
+        FormatterType,
+        AbstractFormatter,
+        FormatterFactory
+)
+
 class MtuciToolFactory(AbstractMtuciToolsFactory):
     """Реализация фабрики инструментов
 
@@ -23,11 +29,13 @@ class MtuciToolFactory(AbstractMtuciToolsFactory):
     def __init__(
         self,
         login: str,
-        password: str
+        password: str,
+        format_: FormatterType = FormatterType.JSON
     ):
         self.session: AbstractMtuciSession = MtuciSession(
             login, password
         )
+        self.formatter: AbstractFormatter = FormatterFactory().create(format_)
 
     def create_tools(self) -> list[BaseTool]:
         """Создаёт инструменты"""
@@ -42,6 +50,7 @@ class MtuciToolFactory(AbstractMtuciToolsFactory):
         информации о пользователе"""
         tool = UserInfoTool()
         tool.metadata["factory"] = self
+        tool.metadata["formatter"] = self.formatter
 
         return tool
 
@@ -49,6 +58,7 @@ class MtuciToolFactory(AbstractMtuciToolsFactory):
         """Создаёт инструмент для получения посещаемости"""
         tool = AttendanceTool()
         tool.metadata["factory"] = self
+        tool.metadata["formatter"] = self.formatter
 
         return tool
 
@@ -56,5 +66,6 @@ class MtuciToolFactory(AbstractMtuciToolsFactory):
         """Создаёт инструмент для получения расписания"""
         tool = ScheduleTool()
         tool.metadata["factory"] = self
+        tool.metadata["formatter"] = self.formatter
 
         return tool

@@ -10,15 +10,26 @@ class UserInfoTool(BaseTool):
     description: str = (
         "Получает информацию о пользователе личного кабинета МТУСИ."
     )
-    metadata: dict[str, Any] = {"factory": None}
+    metadata: dict[str, Any] = {
+        "factory": None,
+        "formatter": None
+    }
 
-    async def _arun(self) -> dict[str, Any]:
+    async def _arun(self) -> Any | dict[str, str]:
         if not (factory := self.metadata.get("factory")):
             return {"error": "Не найдена фабрика, породившая инструмент"}
-        client: Mtuci = await factory.session.get_client()
-        user_info = await client.get_user_info()
 
-        return user_info.model_dump()
+        if not (formatter := self.metadata.get("formatter")):
+            return {"error": "Не найден форматер"}
+
+        client: Mtuci = await factory.session.get_client()
+
+        try:
+            user_info = await client.get_user_info()
+
+            return formatter.format(user_info)
+        except Exception as err: # pylint: disable=W0718
+            return {"error": str(err)}
 
     def _run(self):
         raise NotImplementedError("Поддерживается только асинхронный режим")
