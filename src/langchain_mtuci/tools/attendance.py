@@ -9,15 +9,25 @@ class AttendanceTool(BaseTool):
 
     name: str = "mtuci_attendance"
     description: str = "Получает информацию о посещаемости по предметам."
-    metadata: dict[str, Any] = {"factory": None}
+    metadata: dict[str, Any] = {
+        "factory": None,
+        "formatter": None
+    }
 
-    async def _arun(self) -> list[dict] | dict[str, str]:
+    async def _arun(self) -> Any | dict[str, str]:
         if not (factory := self.metadata.get("factory")):
             return {"error": "Не найдена фабрика, породившая инструмент"}
-        client: Mtuci = await factory.session.get_client()
-        attendance = await client.get_attendace()
 
-        return [a.model_dump(exclude={"uid"}) for a in attendance]
+        if not (formatter := self.metadata.get("formatter")):
+            return {"error": "Не найден форматер"}
+
+        client: Mtuci = await factory.session.get_client()
+        try:
+            attendance = await client.get_attendace()
+
+            return formatter.format(attendance)
+        except Exception as err: # pylint: disable=W0718
+            return {"error": str(err)}
 
     def _run(self):
         raise NotImplementedError("Поддерживается только асинхронный режим")

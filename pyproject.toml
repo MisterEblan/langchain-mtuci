@@ -1,6 +1,6 @@
 [project]
 name = "langchain-mtuci"
-version = "0.1.0"
+version = "0.2.0"
 description = "Langchain tools for MTUCI Private API"
 readme = "README.md"
 authors = [
@@ -10,6 +10,7 @@ requires-python = ">=3.12"
 dependencies = [
     "langchain>=1.0.8",
     "mtuci-private-api>=0.1.2",
+    "toon-python>=0.1.2",
 ]
 
 [build-system]
